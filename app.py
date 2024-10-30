@@ -652,7 +652,7 @@ def get_events():
         scheduled_events = getEventdatas(cookie_username)
         for sd_event in scheduled_events:   # eventsの中にクリックされた日付のものがあるか調べる
             clicked_event_detail = {}
-            date = sd_event["start"].split("T")[0]
+            date = sd_event["start"].split("T")
             if date == clicked_date:    # あればリストに追加
                 clicked_event_detail["id"] =sd_event["id"]
                 clicked_event_detail["title"] = sd_event["title"]
