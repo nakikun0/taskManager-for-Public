@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% block content %}
+<style>
+.btn--blue,
+a.btn--blue {
+  color: #fff;
+  background-color: #00a8eb;
+}
+.btn--blue:hover,
+a.btn--blue:hover {
+  color: #fff;
+  background: #007ff5;
+}
+
+a.btn--radius {
+   border-radius: 100vh;
+}
+
+body {
+  background-color: #e3f2fd;
+  margin: 0;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 90vh; /* 画面全体の高さにフィット */
+}
+
+div.main {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.5);
+  padding: 30px;
+  width: 300px;
+}
+
+</style>
+
+<div class="wrapper">
+  <div class="main">
+    <h1 style="text-align:center; margin: 20px;">Log in</h1>
+
+    <form action="{{ url_for('entrance') }}" method="post">
+        <input type="text" name="name" placeholder="LINEユーザー名" aria-label="ラインユーザー名を入力してください" style="height: 40px; width: 200px; margin: 20px;">
+        {% if nameisWrong %}
+        <label for="input">ユーザー名が見つかりませんでした</label>
+        {% endif %}
+        <br>
+        <button type="submit" class="btn btn--blue btn--radius" style="text-align: center; height: 40px;  width: 200px; margin: 20px;">ログイン    ></button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

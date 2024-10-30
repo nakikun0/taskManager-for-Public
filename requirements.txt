@@ -1,0 +1,8 @@
+Flask
+apscheduler
+datetime
+line-bot-sdk
+SQLAlchemy
+psycopg2
+pytz
+python-dotenv

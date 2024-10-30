@@ -1,0 +1,238 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+    form {
+        margin: 4px;
+        width: 620px;
+    }
+
+    .inputContainer {
+        margin: 5px;
+        padding: 5px;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 610px;
+    }
+
+    .title {
+        margin: 3px;
+    }
+
+    .date {
+        margin: 3px;
+        width: 131px;
+        padding: 0px;
+        height: 30px;
+    }
+
+    .time {
+        margin: 3px;
+    }
+
+    .select{
+        margin: 3px;
+        height: 30px;
+    }
+
+    .date_1 {
+        margin: 1px;
+        width: 131px;
+        padding: 0px;
+    }
+
+    .time_1 {
+        margin: 0px;
+    }
+
+    .select_1 {
+        margin: 0px;
+    }
+
+    .deleteButton {
+        margin-left: 5px;
+        display: inline-flex;
+        align-items: center;
+        background-color: #dfdfdf;
+        border: 1px solid #7f7f7f;
+        color: rgb(0, 0, 0);
+        padding: 8px 8px;
+        font-size: 15px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .deleteButton:hover{
+        background-color: #c8c8c8;
+    }
+
+    #addBtn {
+        margin: 1px;
+        padding:2px 6px;
+        background-color: #dfdfdf;
+        border: 1px solid #7f7f7f;
+        border-radius: 5px;
+        float: left;       
+        margin-left: 10px;
+        color: black;
+    }
+
+    #addBtn:hover{
+        background-color: #c8c8c8;
+    }
+
+    button.submitBtn {
+        margin-top: 3px;
+        height: 43px;
+        width: 120px;
+        font-size: 18px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        float: right;
+        margin-right: 5px;
+    }
+
+    button.submitBtn:hover {
+        background-color: #0056b3;
+    }
+
+    .comment {
+        margin: 3px;
+        width: 590px;
+    }
+
+    @media (max-width: 600px) {
+        form {
+            margin: 4px;
+            width: 320px;
+        }
+
+        .inputContainer {
+            margin: 5px;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 310px;
+        }
+
+        .title {
+            margin: 3px;
+            width: 140px;
+        }
+
+        .time_1 {
+        margin: 0px;
+    }
+    
+    .time_1 {
+        margin-left: 3px;
+    }
+
+        .comment {
+        margin: 3px;
+        width: 290px;
+        }
+    }
+
+</style>
+
+<p>時間の入力は任意です</p>
+<form action="/scheduleResister/success" method="POST" id="scheduleForm">
+    <div id="schedules">
+        <div id="schedule_1" class="inputContainer">
+            <input type="number" name="id" value="1" style="display: none;">
+            <input type="text" class="title" name="title_1" placeholder="タイトル" maxlength="18" required>
+            <input type="date" class="date_1" name="date_1" placeholder="Date" required>
+            <input type="time" class="time_1" name="start_time_1" placeholder="Start"><span>～</span><input class="time" type="time" placeholder="End" name="fin_time_1">
+            <select class="select_1" name="category_1" required>
+                <option>就活</option>
+                <option>学業</option>
+                <option>その他</option>
+            </select>
+            <i class="deleteButton bi bi-trash" id="1" onclick="deleteDiv(this.id)"></i>
+            <input type="text" class="comment" name="comment_1" placeholder="コメント(持ち物や場所等)任意" maxlength="18">
+        </div>
+    </div>
+    <input type="button" id="addBtn" onclick="addDiv()" value="＋">
+    <button type="submit" class="submitBtn"><i class="bi bi-send"></i>送信</button>
+</form>
+
+
+
+<script>
+
+let num_of_div = 1;
+const options = ["就活", "学業", "その他"];
+
+function createInput(type, name, className, placeholder = "", required = false) {
+    let input = document.createElement("input");
+    input.type = type;
+    input.name = name;
+    input.className = className;
+    if (placeholder) input.placeholder = placeholder;
+    if (required) input.required = true;
+    return input;
+}
+
+function createSelect(options, name) {
+    let select = document.createElement("select");
+    select.className = "select";
+    options.forEach(option => {
+        let new_option = document.createElement("option");
+        new_option.textContent = option;
+        select.append(new_option);
+    });
+    select.name = name
+    return select;
+}
+
+function addDiv() {
+    num_of_div += 1;
+    let schedules = document.getElementById("schedules");
+    let new_div = document.createElement("div");
+    new_div.id = "schedule_" + num_of_div;
+    new_div.className = "inputContainer";
+
+    let new_id = createInput("number", "id" ,"")
+    let new_title = createInput("text", "title_" + num_of_div, "title","タイトル", true);
+    let new_date = createInput("date", "date_" + num_of_div, "date", "", true);
+    let new_start_time = createInput("time", "start_time_" + num_of_div, "time");
+    let new_fin_time = createInput("time", "fin_time_" + num_of_div, "time");
+    let new_comment = createInput("text", "comment_" + num_of_div, "comment","コメント(持ち物や場所等)任意");
+    new_id.value = num_of_div
+    new_id.style.display = "none"
+
+    let new_kara = document.createElement("span");
+    new_kara.textContent = "～";
+
+    let new_select = createSelect(options, "category_"+num_of_div);
+
+    let deleteButton = document.createElement("i");
+    deleteButton.className = "deleteButton bi bi-trash";
+    deleteButton.id = num_of_div;
+    deleteButton.onclick = function() {
+        deleteDiv(this.id);  // クリックされたら該当の <div> を削除
+    };
+
+    
+
+    [new_id, new_title, new_date, new_start_time, new_kara, new_fin_time, new_select, deleteButton, new_comment].forEach(el => new_div.append(el));
+
+    schedules.append(new_div);
+}
+
+function deleteDiv(num_of_div){
+    let scheduleDiv = document.getElementById("schedule_" + num_of_div);
+    if (scheduleDiv) {
+        scheduleDiv.remove();
+    }
+}
+
+
+</script>
+{% endblock %}

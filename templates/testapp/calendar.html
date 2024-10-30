@@ -1,0 +1,375 @@
+{% extends "layout.html" %}
+{% block content %}
+<style>
+  #calendar {
+    max-width: 100%;
+    height: auto;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  /* ポップアップの背景 */
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* カレンダーより前に表示 */
+  }
+
+  /* ポップアップのコンテンツ */
+  .popup-content {
+    background-color: #fff;
+    padding: 20px;
+    padding-bottom: 6px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+    position: relative;
+    z-index: 1001; /* ポップアップの背景より前に表示 */
+    background-color: rgba(255, 255, 255, 0.9); /* 半透明の白背景 */
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2); /* 柔らかい影 */
+  }
+
+  #popup-date {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+  }
+
+  #popup-schedules {
+    margin-top: 10px;
+  }
+
+  /* 閉じるボタン */
+  .popup-close {
+    position: absolute;
+    color: #333;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1002; /* 閉じるボタンがすべての前に表示 */
+  }
+
+  .popup-content p{
+    margin: 0px;
+  }
+
+  .popupEL{
+    margin: 5px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+    margin-bottom: 8px;
+    padding: 5px;
+    align-items: center;
+    font-size: 0.9em;
+    color: #333;
+  }
+
+  a[href="./scheduleResister"] {
+    width: 90px;
+    display: block;
+    text-align: center;
+    padding: 4px 0;
+    background-color: #4a90e2; /* アクセントカラー */
+    color: #fff;
+    font-weight: bold;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  a[href="./scheduleResister"]:hover {
+    background-color: #357ABD; /* ボタンのホバー色 */
+  }
+
+  button.graybtn {
+    position: absolute;
+    bottom: 5%;
+    width: 90px;
+    font-size: 15px;
+    height: 34px;
+    padding: 4px 0;
+    background-color: #8B8B8B;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    float: right;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  button.bluebtn {
+    position: absolute;
+    bottom: 5%;
+    width: 90px;
+    font-size: 15px;
+    height: 34px;
+    padding: 4px 0;
+    background-color: #4a90e2;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    float: right;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  button.bluebtn:hover {
+    background-color: #357ABD;
+  }
+
+  button.graybtn:hover {
+    background-color: #646464;
+  }
+
+  input[type="checkbox"] {
+    position: absolute;
+  }
+
+</style>
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
+
+<!-- カレンダー -->
+<div id='calendar'></div>
+
+<!-- ポップアップ -->
+<div id="popup" class="popup-overlay">
+  <div id="popup-content" class="popup-content">
+    <span id="closePopup" class="popup-close">&times;</span>
+    <h4 id="popup-date">日付</h2>
+    <form action="/eventDeleted" method="post">
+    <div id="popup-schedules"></div>
+      <input type="number" id="popupELCount" style="display: none;">
+      <button type="button" id="deleteBtn" class="btn graybtn" onclick="actDeleteMode()" style="left: 170px;"><i class="bi bi-trash"></i> 削除</button>
+      <a href="./scheduleResister" class="btn" id="addBtn" style= "position: absolute; bottom: 5%; left: 40px;">追加</a>
+      <button type="button" id="deleteCancel" class="btn graybtn" onclick="cancelDeleteMode()" style="left: 170px; display: none;">キャンセル</button>
+      <button type="submit" id="deleteEnter" class="btn bluebtn" onclick="DeleteSchedule()" style="left: 40px; display: none;">確定</button>
+    </form>
+  </div>
+</div>
+
+<div id="loading" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1002;">
+  <div class="spinner-border" role="status">
+    <span class="sr-only"></span>
+  </div>
+</div>
+
+<script>
+
+  function createPopupEL(element, i, date){
+    console.log(element);
+    let popup_content = document.getElementById("popup-schedules");
+    let div = document.createElement("div");
+    div.id = "popupEL"+i;
+    div.className = "popupEL";
+    div.style.margin = "10px";
+
+    //checkbox(削除用)
+    let checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    if(element["id"]){
+      checkbox.value = element["id"];
+      checkbox.name = "eventCB";
+    }
+    else{
+      day = date.substr(8);
+      if(day.indexOf("0") == 0){
+        day = day.replace(/^0+/, "");
+        console.log("day")
+      }
+      console.log(day);
+      checkbox.value = day;
+      checkbox.name = "shiftCB";
+    }
+    checkbox.style.display = "none";
+    div.append(checkbox)
+    
+
+    let outline = document.createElement("p");
+    outline.textContent = element["title"];
+    outline.className = "popupELContent";
+    div.append(outline);
+    if(element["start"]) {
+      outline.textContent += " "+element["start"];
+    }
+    if(element["fin"]) {
+      outline.textContent += "～"+element["fin"];
+    }
+    if(element["comment"]){
+      let commentEL = document.createElement("p");
+      commentEL.textContent = element["comment"];
+      commentEL.className = "popupELContent";
+      div.append(commentEL);
+    }
+
+    document.getElementById("addBtn").style.display = "block";
+    document.getElementById("deleteBtn").style.display = "block";
+    document.getElementById("deleteEnter").style.display = "none";
+    document.getElementById("deleteCancel").style.display = "none";
+
+
+    popup_content.append(div);
+  }
+
+document.addEventListener('DOMContentLoaded', function() {
+  var calendarEl = document.getElementById('calendar');
+  var popupEl = document.getElementById('popup');
+  var loadingEl = document.getElementById('loading');
+  var calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',  // 月表示形式
+    themeSystem: 'standard',
+    contentHeight: 'auto',
+    titleFormat: {
+      year: 'numeric',
+      month: 'numeric'
+    },
+    locale: "ja",
+    events: '/get_events',  // イベント取得
+    dateClick: function(info) {
+      // 日付クリック時のイベント
+      loadingEl.style.display = 'block';
+      fetch(`/get_events?date=${info.dateStr}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data[0] === 'success') {
+            loadingEl.style.display = 'none';
+            let i = 0
+            for(i=1;i<data.length;i++){
+              console.log(data[i])
+              document.getElementById("popup-date").innerText = info.dateStr;
+              createPopupEL(data[i], i, info.dateStr);
+              document.getElementById('popup').style.display = 'flex';
+            }
+            count = document.getElementById("popupELCount");
+            count.value = i;
+            adjustPopupSize();
+          } else {
+            loadingEl.style.display = 'none';
+            alert('No events found for this date');
+          }
+        });
+    },
+
+    eventClick: function(info) {
+      // イベント要素自体がクリックされた場合
+      loadingEl.style.display = 'block';
+      console.log(info.event.startStr)
+      datetime = info.event.startStr
+      if(datetime.indexOf("T") != -1){
+        datetime = datetime.substr(0,datetime.indexOf("T"));
+      }
+        console.log(info.event.startStr, datetime)
+      fetch(`/get_events?date=${datetime}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data[0] === 'success') {
+            loadingEl.style.display = 'none';
+            let i = 0
+            for(i=1;i<data.length;i++){
+              console.log(data[i])
+              document.getElementById("popup-date").innerText = datetime;
+              createPopupEL(data[i], i, datetime);
+              document.getElementById('popup').style.display = 'flex';
+            }
+            count = document.getElementById("popupELCount");
+            count.value = i;
+            adjustPopupSize();
+          } else {
+            loadingEl.style.display = 'none';
+            alert('No events found for this date');
+          }
+        });
+    }
+
+  });
+
+  calendar.render();
+
+  // ポップアップを閉じる処理
+  document.getElementById('closePopup').addEventListener('click', function() {
+    document.getElementById('popup').style.display = 'none';  // ポップアップ非表示
+    num = document.getElementById("popupELCount").value;
+    for(let i=1;i<num;i++){
+    document.getElementById("popupEL"+i).remove()
+    }
+    document.getElementById("popupELCount").value = 0;
+  });
+});
+
+
+function adjustPopupSize() {
+  let count = 0;
+  const popupContent = document.getElementById('popup-content');
+  const popupSchedules = document.getElementById('popup-schedules');
+  const popupELs = popupSchedules.getElementsByClassName('popupEL');
+  console.log("EL:",popupELs);
+
+  Array.from(popupELs).forEach(popupEL => {
+    // `let` を使用して `popupELcontent` 要素を取得
+    console.log(popupEL)
+    console.log("child:",popupEL.childElementCount);
+    count += popupEL.childElementCount-1; // checkbox分で-1
+    });
+  console.log(count);
+  const baseHeight = 120; // 基本高さ
+  const additionalHeightPerItem = 35; // 各popupELの追加高さ
+  
+  // コンテンツの高さを動的に計算
+  const newHeight = baseHeight + (count * additionalHeightPerItem);
+  popupContent.style.height = `${newHeight}px`;
+}
+
+adjustPopupSize();
+
+function actDeleteMode(){
+  console.log("activateDelete");
+  document.getElementById("addBtn").style.display = "none";
+  document.getElementById("deleteBtn").style.display = "none";
+  document.getElementById("deleteEnter").style.display = "block";
+  document.getElementById("deleteCancel").style.display = "block";
+
+  const popupContent = document.getElementById('popup-content');
+  const popupSchedules = document.getElementById('popup-schedules');
+  const popupELs = popupSchedules.getElementsByClassName('popupEL');
+  console.log("EL:",popupELs);
+
+  Array.from(popupELs).forEach(popupEL => {
+    // `let` を使用して `popupELcontent` 要素を取得
+    checkbox = popupEL.getElementsByTagName("input");
+    console.log("checkbox",checkbox)
+    checkbox[0].style.display = "block";
+    });
+
+}
+
+function cancelDeleteMode(){
+  console.log("deactivateDelete");
+  document.getElementById("addBtn").style.display = "block";
+  document.getElementById("deleteBtn").style.display = "block";
+  document.getElementById("deleteEnter").style.display = "none";
+  document.getElementById("deleteCancel").style.display = "none";
+}
+
+</script>
+
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>

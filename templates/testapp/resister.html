@@ -1,0 +1,268 @@
+<style>
+            /* 基本スタイル */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        form {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .ul {
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 10px;
+        }
+
+        li {
+            list-style-type: none;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        li input[type="checkbox"] {
+            height: 19px;
+            width: 19px;
+            margin-right: 5px;
+        }
+
+        li input[type="time"] {
+            width: 80px;
+        }
+
+        button.submitBtn {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button.submitBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .noWrap{
+            white-space: nowrap;
+        }
+
+        /* 月変更時のトースト */
+    #toast {
+        display: flex;
+        visibility: hidden;
+        height: 50px;
+        width: 120px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+        z-index: 999;
+        background-color: #c4ddf7;
+        position: absolute;
+        top: 5px;
+        left: 40%;
+
+    }
+     #toast > p {
+        margin-left: 8px;
+        margin-top: 16px;
+        font-family: "Noto Sans CJK JP";
+        font-size: 14px;
+        vertical-align: middle;
+        letter-spacing: 0;
+    }
+
+        /* スマホ向けのレスポンシブ */
+        @media (max-width: 600px) {
+    .ul {
+        /* flexをやめて、2列のグリッドを維持 */
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* 2列表示 */
+        gap: 5px; /* アイテム間の間隔を調整 */
+    }
+
+    li {
+        /* リストアイテムの配置を調整 */
+        flex-direction: row; /* アイテムを横に配置 */
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%; /* アイテム全体の幅を100%に */
+        padding: 2px;
+    }
+
+    li input[type="time"] {
+        width: 50px; /* 入力欄の幅を小さく */
+        margin-left: 5px;
+        margin-right: 1px;
+    }
+
+    /* チェックボックスと日付の間隔を調整 */
+    li input[type="checkbox"] {
+        margin-right: 0px;
+    }
+
+    button.submitBtn {
+        font-size: 16px;
+    }
+    input[type="time"]:disabled {
+    background-color: #bbbbbb;
+    color: #aaa; 
+    }
+
+    input[type="time"]:enabled {
+        background-color: #f0f0f0; /* 背景色を白に */
+        color: #000;
+    }
+
+}
+
+
+</style>
+{% extends "layout.html" %}
+{% block content %}
+
+<!--　選択ボタン-->
+<div id="toast"><p>切り替えました</p></div>
+<div class="btn-group" role="group" aria-label="Basic radio toggle button group" style="margin-top: 10px;">
+  <input type="radio" class="btn-check" name="btnradio" id="this_month_btn" autocomplete="off" checked>
+  <label class="btn btn-outline-primary" for="this_month_btn">{{ year }}年{{ month }}月度</label>
+
+  <input type="radio" class="btn-check" name="btnradio" id="next_month_btn" autocomplete="off">
+  <label class="btn btn-outline-primary" for="next_month_btn">{{ next_year }}年{{ next_month }}月度</label>
+</div>
+    <p>時間の入力は任意です 必要に応じてご利用ください</p>
+<form action="/success" method="POST">
+    <input name="username" required placeholder="LINEユーザー名" style="margin-bottom: 10px;"></input>
+    <div id="this_month" style="display:block;">
+        <ul id = "list" class="ul" style="list-style-type: none;">
+            {% for i in range(days) %}
+            <li id="dates">
+                <input type="checkbox" name="dates" value="{{ i+1 }}" id="date-{{ i+1 }}" onchange="changeTimeInputs({{ i+1 }})">
+                <span class="noWrap" onclick="(day)=>{
+                    console.log('OK')
+                    document.getElementById('date-'+i).checked = true
+                }">{{ i+1 }}日({{ weekdays[i] }})</span>
+                <input type="time" name="start_time_{{ i+1 }}" id="start_time_{{ i+1 }}" onchange="changeStartInputs({{ i+1 }})" disabled>
+                ～ 
+                <input type="time" name="fin_time_{{ i+1 }}" id="fin_time_{{ i+1 }}" disabled>
+            </li>
+            {% endfor %}
+            <button type="submit" class="submitBtn"><i class="bi bi-send"></i>送信</button>
+        </ul>
+    </div>
+
+    <div id="next_month" style="display:none;">
+        <ul id = "next_list" class="ul" style="list-style-type: none;">
+            {% for i in range(next_days) %}
+            <li id="dates">
+                <input type="checkbox" name="NMdates" value="{{ i+1 }}" id="NMdate-{{ i+1 }}" onchange="changeTimeInputs_nextMonth({{ i+1 }})">
+                <span class="noWrap">{{ i+1 }}日({{ next_weekdays[i] }})</span>
+                <input type="time" name="NMstart_time_{{ i+1 }}" id="NMstart_time_{{ i+1 }}" onchange="changeStartInputs_nextMonth({{ i+1 }})" disabled>
+                ～ 
+                <input type="time" name="NMfin_time_{{ i+1 }}" id="NMfin_time_{{ i+1 }}" disabled>
+            </li>
+            {% endfor %}
+            <button type="submit" class="submitBtn"><i class="bi bi-send"></i>送信</button>
+        </ul>
+    </div>
+<label for="list">出勤日のチェックボックスにチェックを入れてください</label>
+</form>
+
+<script>
+    
+    function changeTimeInputs(day) {
+        const startTimeInput = document.getElementById(`start_time_${day}`);
+        const finTimeInput = document.getElementById(`fin_time_${day}`);
+        const checkbox = document.getElementById(`date-${day}`);
+        
+        if (checkbox.checked) {
+        startTimeInput.disabled = false;
+        } else {
+        startTimeInput.disabled = true;
+        finTimeInput.disabled = true;
+        startTimeInput.value = "";
+        finTimeInput.value = "";
+        }
+    }
+
+    function changeTimeInputs_nextMonth(day) {
+        const startTimeInput = document.getElementById(`NMstart_time_${day}`);
+        const finTimeInput = document.getElementById(`NMfin_time_${day}`);
+        const checkbox = document.getElementById(`NMdate-${day}`);
+        
+        if (checkbox.checked) {
+        startTimeInput.disabled = false;
+        } else {
+        startTimeInput.disabled = true;
+        finTimeInput.disabled = true;
+        startTimeInput.value = "";
+        finTimeInput.value = "";
+        }
+    }
+
+    function changeStartInputs(day){
+        console.log("ONCHANGE")
+        const startTimeInput = document.getElementById(`start_time_${day}`);
+        const finTimeInput = document.getElementById(`fin_time_${day}`);
+
+        if(startTimeInput.value){
+            finTimeInput.disabled = false
+        }else{
+            finTimeInput.disabled = true
+            finTimeInput.value = "";
+        }
+    }
+
+    function changeStartInputs_nextMonth(day){
+        const startTimeInput = document.getElementById(`NMstart_time_${day}`);
+        const finTimeInput = document.getElementById(`NMfin_time_${day}`);
+
+        if(startTimeInput.value){
+            finTimeInput.disabled = false
+        }else{
+            finTimeInput.disabled = true
+            finTimeInput.value = "";
+        }
+    }
+
+    document.getElementById("this_month_btn").addEventListener("change", function() {
+        if(this.checked){
+            document.getElementById("toast");
+            document.getElementById("this_month").style.display = "block";
+            document.getElementById("next_month").style.display = "none";
+            toast.style.visibility = "visible";
+            setTimeout(function() {
+            toast.style.visibility = "hidden";
+            }, 2000);
+            //alert("今月度に切り替わりました");
+            
+        }
+    });
+
+    document.getElementById("next_month_btn").addEventListener("change", function() {
+        if(this.checked){
+            document.getElementById("toast");
+            document.getElementById("this_month").style.display = "none";
+            document.getElementById("next_month").style.display = "block";
+            toast.style.visibility = "visible";
+            setTimeout(function() {
+            toast.style.visibility = "hidden";
+            }, 2000);
+            //alert("来月度に切り替わりました");
+        }
+    });
+
+</script>
+
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>

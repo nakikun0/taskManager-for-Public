@@ -1,0 +1,49 @@
+<style>
+     .content {
+          background: #ffffff;
+     }
+     
+     .card {
+          background: #F6F6F6;
+          margin: 25px;
+          border: 1px solid #e0e0e0;
+          border-radius: 10px;
+          padding: 1.5rem;
+          box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+          width: 180px;
+          text-align: center;
+          text-decoration:none;
+          font-size: 18px;
+          font-weight: bold;
+          color: #4a4a4a;
+          transition: background-color 0.3s ease;
+     }
+
+     .card:hover {
+          background: #cbcbcb;
+          color: #5a5a5a;
+     }
+
+     .fa-solid {
+          color: #545454;
+          margin-bottom: 15px;
+          font-size: 25px;
+          transition: background-color 0.3s ease;
+     }
+
+     .fa-solid:hover {
+          color: #444444;
+     }
+
+     
+</style>
+{% extends "layout.html" %}
+{% block content %}
+<div class="content">
+<a class="card" href="/calendar"><i class="fa-solid fa-calendar"></i>カレンダー</a>
+<a class="card" href="/shift_resister"><i class="fa-solid fa-business-time"></i>シフト登録</a>
+<a class="card" href="/scheduleResister"><i class="fa-solid fa-calendar-plus"></i>スケジュール登録</a>
+<a class="card" href="/learningTime"><i class="fa-solid fa-graduation-cap"></i>学習時間登録</a>
+</div>
+{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>

@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div style="text-align: center; padding: 20px;">
+    {% if result %}  
+      <h1>データが正常に保存されました</h1>
+    {% else %}
+      <h1>データの保存に失敗しました</h1>
+    {% endif %}
+    <p>3秒後にダッシュボードに移動します...</p>
+</div>
+
+<script>
+  setTimeout(function() {
+    window.location.href = "/dashboard";
+  }, 3000); // 3秒後にダッシュボードに移動
+</script>
+
+{% endblock %}
