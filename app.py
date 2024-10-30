@@ -35,7 +35,6 @@ from sqlalchemy.sql import insert, select
 from sqlalchemy.orm import sessionmaker
 import copy
 import json
-import redis
 
 # 初期設定
 # ローカル開発環境でのみ dotenv を読み込む
@@ -97,8 +96,6 @@ Learning_times = Table("Learning_times", metadata,
 
 # テーブルの作成
 metadata.create_all(engine)
-
-r = redis.Redis(host="localhost", port=6379, db=0)
 
 def upsert_shift_by_name(username, shift_data, next_month_data):
 
@@ -827,6 +824,4 @@ def handle_sticker_message(event):
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
-    app.run(DEBUG=True)
+    app.run(host='0.0.0.0', port=port, debug=True)
