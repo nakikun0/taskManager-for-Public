@@ -309,12 +309,12 @@ def sendMessage():
                 # print(event)
                 today = dt.strftime("%Y-%m-%d")
                 # print("today",today)
-                if today in event["start"]:
-                    todays_event["title"] = event["title"]
-                    if "T" in event["start"]:
-                        todays_event["start"] = event["start"][11:16]
-                    if event["end"]:
-                        todays_event["fin"] = event["end"][11:16]
+                if today in event.start:
+                    todays_event["title"] = event.title
+                    if "T" in event.start:
+                        todays_event["start"] = event.start[11:16]
+                    if event.end:
+                        todays_event["fin"] = event.end[11:16]
                     todays_events.append(todays_event.copy())
                     
         # print(todays_events)
@@ -382,12 +382,12 @@ def evening_sendMessage():
                 # print(event)
                 nextday = (dt + timedelta(days=1)).strftime("%Y-%m-%d")
                 # print("nextday",nextday)
-                if nextday in event["start"]:
-                    nextdays_event["title"] = event["title"]
-                    if "T" in event["start"]:
-                        nextdays_event["start"] = event["start"][11:16]
-                    if event["end"]:
-                        nextdays_event["fin"] = event["end"][11:16]
+                if nextday in event.start:
+                    nextdays_event["title"] = event.title
+                    if "T" in event.start:
+                        nextdays_event["start"] = event.start[11:16]
+                    if event.end:
+                        nextdays_event["fin"] = event.end[11:16]
                     nextdays_events.append(nextdays_event.copy())
                     
         # print(nextdays_events)
@@ -652,17 +652,17 @@ def get_events():
         scheduled_events = getEventdatas(cookie_username)
         for sd_event in scheduled_events:   # eventsの中にクリックされた日付のものがあるか調べる
             clicked_event_detail = {}
-            date = sd_event["start"].split("T")
+            date = sd_event.start.split("T")[0]
             if date == clicked_date:    # あればリストに追加
-                clicked_event_detail["id"] =sd_event["id"]
-                clicked_event_detail["title"] = sd_event["title"]
-                if "T" in sd_event["start"]:
-                    clicked_event_detail["start"] = sd_event["start"].split("T")[1].rsplit(":",1)[0] # yyyy-mm-ddThh:mm:ssを hh:mmに変換
-                if sd_event["end"]:
-                    clicked_event_detail["fin"] = sd_event["end"].split("T")[1].rsplit(":",1)[0]
-                clicked_event_detail["category"] = sd_event["category"]
-                if sd_event["comment"]:
-                    clicked_event_detail["comment"] = sd_event["comment"]
+                clicked_event_detail["id"] =sd_event.id
+                clicked_event_detail["title"] = sd_event.title
+                if "T" in sd_event.start:
+                    clicked_event_detail["start"] = sd_event.start.split("T")[1].rsplit(":",1)[0] # yyyy-mm-ddThh:mm:ssを hh:mmに変換
+                if sd_event.end:
+                    clicked_event_detail["fin"] = sd_event.end.split("T")[1].rsplit(":",1)[0]
+                clicked_event_detail["category"] = sd_event.category
+                if sd_event.comment:
+                    clicked_event_detail["comment"] = sd_event.comment
                 clicked_event_details.append(clicked_event_detail.copy())
 
 
