@@ -797,7 +797,7 @@ def handle_message(event):
         reply_message = f"{serviceurl}shift_resister"
     elif event.message.text == "スケジュール登録":
         reply_message = f"{serviceurl}scheduleResister"
-    elif event.message.text == "カレンダー"
+    elif event.message.text == "カレンダー":
         reply_message = f"{serviceurl}calendar"
     else:
         reply_message = f'こんにちは\nシフトを登録したい場合「シフト登録」と送信してください'
