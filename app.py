@@ -288,7 +288,7 @@ def sendMessage():
     for row in rows:
 
         todays_event = {"title":"", "start":None, "fin":None}
-        name = row["name"]
+        name = row.name
         shift_Datas = getShiftData(name)
         if shift_Datas: 
             for shift in shift_Datas[2]: # 今月のシフトデータから一致する日のものがあるか確認
@@ -331,7 +331,7 @@ def sendMessage():
             text += "です\n\nカレンダーを確認する\n"+serviceurl+"calendar"
 
             messages = TextSendMessage(text=text)
-            glb_line_bot_api.push_message(row["line_id"],
+            glb_line_bot_api.push_message(row.line_id,
                                       messages=messages)
             
     session.close()
@@ -349,7 +349,7 @@ def evening_sendMessage():
     for row in rows:
 
         nextdays_event = {"title":"", "start":None, "fin":None}
-        name = row["name"]
+        name = row.name
         shift_Datas = getShiftData(name)
         if shift_Datas: 
             if nextday == 1:
@@ -404,7 +404,7 @@ def evening_sendMessage():
             text += "です\n\nカレンダーを確認する\n"+serviceurl+"calendar"
 
             messages = TextSendMessage(text=text)
-            glb_line_bot_api.push_message(row["line_id"],
+            glb_line_bot_api.push_message(row.line_id,
                                       messages=messages)
             
     session.close()
@@ -795,7 +795,10 @@ def handle_message(event):
 
     elif event.message.text == "シフト登録":
         reply_message = f"{serviceurl}shift_resister"
-
+    elif event.message.text == "スケジュール登録":
+        reply_message = f"{serviceurl}scheduleResister"
+    elif event.message.text == "カレンダー"
+        reply_message = f"{serviceurl}calendar"
     else:
         reply_message = f'こんにちは\nシフトを登録したい場合「シフト登録」と送信してください'
 
