@@ -1,7 +1,7 @@
 Flask
 apscheduler
 datetime
-line-bot-sdk
+line-bot-sdk==3.13.0
 SQLAlchemy
 psycopg2
 pytz
