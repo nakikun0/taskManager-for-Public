@@ -366,6 +366,19 @@ function cancelDeleteMode(){
   document.getElementById("deleteBtn").style.display = "block";
   document.getElementById("deleteEnter").style.display = "none";
   document.getElementById("deleteCancel").style.display = "none";
+  
+  const popupContent = document.getElementById('popup-content');
+  const popupSchedules = document.getElementById('popup-schedules');
+  const popupELs = popupSchedules.getElementsByClassName('popupEL');
+  console.log("EL:",popupELs);
+
+  Array.from(popupELs).forEach(popupEL => {
+    // `let` を使用して `popupELcontent` 要素を取得
+    checkbox = popupEL.getElementsByTagName("input");
+    console.log("checkbox",checkbox)
+    checkbox[0].style.display = "none";
+    });
+
 }
 
 </script>

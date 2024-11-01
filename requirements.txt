@@ -1,9 +1,12 @@
 Flask
 apscheduler
 datetime
-line-bot-sdk
+line-bot-sdk==3.13.0
 SQLAlchemy
 psycopg2
 pytz
 python-dotenv
+<<<<<<< HEAD
 redis
+=======
+>>>>>>> de82184a796f55768707a2d4766bb731c34b981f

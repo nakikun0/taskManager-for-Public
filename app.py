@@ -35,7 +35,6 @@ from sqlalchemy.sql import insert, select
 from sqlalchemy.orm import sessionmaker
 import copy
 import json
-import redis
 
 # 初期設定
 # ローカル開発環境でのみ dotenv を読み込む
@@ -97,8 +96,6 @@ Learning_times = Table("Learning_times", metadata,
 
 # テーブルの作成
 metadata.create_all(engine)
-
-r = redis.Redis(host="localhost", port=6379, db=0)
 
 def upsert_shift_by_name(username, shift_data, next_month_data):
 
@@ -291,19 +288,20 @@ def sendMessage():
     for row in rows:
 
         todays_event = {"title":"", "start":None, "fin":None}
-        name = row["name"]
+        name = row.name
         shift_Datas = getShiftData(name)
-        if shift_Datas: 
-            for shift in shift_Datas[2]: # 今月のシフトデータから一致する日のものがあるか確認
-                if today == shift["date"]:
-                    todays_event["title"] = "バイト"
-                    if shift["start_time"]:
-                        todays_event["start"] = shift["start_time"]
-                    if shift["fin_time"]:
-                        todays_event["fin"] = shift["fin_time"]
-                    todays_events.append(todays_event.copy())
-                    # print("OK")
-                    break
+        if shift_Datas:
+            if shift_Datas[2]: 
+                for shift in shift_Datas[2]: # 今月のシフトデータから一致する日のものがあるか確認
+                    if today == shift["date"]:
+                        todays_event["title"] = "バイト"
+                        if shift["start_time"]:
+                            todays_event["start"] = shift["start_time"]
+                        if shift["fin_time"]:
+                            todays_event["fin"] = shift["fin_time"]
+                        todays_events.append(todays_event.copy())
+                        # print("OK")
+                        break
 
         event_Datas = getEventdatas(name)
         if event_Datas: # スケジュール登録されたイベントデータから一致する日のものを探す
@@ -312,12 +310,12 @@ def sendMessage():
                 # print(event)
                 today = dt.strftime("%Y-%m-%d")
                 # print("today",today)
-                if today in event["start"]:
-                    todays_event["title"] = event["title"]
-                    if "T" in event["start"]:
-                        todays_event["start"] = event["start"][11:16]
-                    if event["end"]:
-                        todays_event["fin"] = event["end"][11:16]
+                if today in event.start:
+                    todays_event["title"] = event.title
+                    if "T" in event.start:
+                        todays_event["start"] = event.start[11:16]
+                    if event.end:
+                        todays_event["fin"] = event.end[11:16]
                     todays_events.append(todays_event.copy())
                     
         # print(todays_events)
@@ -334,7 +332,7 @@ def sendMessage():
             text += "です\n\nカレンダーを確認する\n"+serviceurl+"calendar"
 
             messages = TextSendMessage(text=text)
-            glb_line_bot_api.push_message(row["line_id"],
+            glb_line_bot_api.push_message(row.line_id,
                                       messages=messages)
             
     session.close()
@@ -352,10 +350,10 @@ def evening_sendMessage():
     for row in rows:
 
         nextdays_event = {"title":"", "start":None, "fin":None}
-        name = row["name"]
+        name = row.name
         shift_Datas = getShiftData(name)
         if shift_Datas: 
-            if nextday == 1:
+            if nextday == 1 and shift_Datas[3]:
                 for shift in shift_Datas[3]: # 来月のシフトデータから一致する日のものがあるか確認
                     if nextday == shift["date"]:
                         nextdays_event["title"] = "バイト"
@@ -367,16 +365,17 @@ def evening_sendMessage():
                         # print("OK")
                         break
             else:
-                for shift in shift_Datas[2]: # 今月のシフトデータから一致する日のものがあるか確認
-                    if nextday == shift["date"]:
-                        nextdays_event["title"] = "バイト"
-                        if shift["start_time"]:
-                            nextdays_event["start"] = shift["start_time"]
-                        if shift["fin_time"]:
-                            nextdays_event["fin"] = shift["fin_time"]
-                        nextdays_events.append(nextdays_event.copy())
-                        # print("OK")
-                        break
+                if shift_Datas[2]:
+                    for shift in shift_Datas[2]: # 今月のシフトデータから一致する日のものがあるか確認
+                        if nextday == shift["date"]:
+                            nextdays_event["title"] = "バイト"
+                            if shift["start_time"]:
+                                nextdays_event["start"] = shift["start_time"]
+                            if shift["fin_time"]:
+                                nextdays_event["fin"] = shift["fin_time"]
+                            nextdays_events.append(nextdays_event.copy())
+                            # print("OK")
+                            break
 
         event_Datas = getEventdatas(name)
         if event_Datas: # スケジュール登録されたイベントデータから一致する日のものを探す
@@ -385,12 +384,12 @@ def evening_sendMessage():
                 # print(event)
                 nextday = (dt + timedelta(days=1)).strftime("%Y-%m-%d")
                 # print("nextday",nextday)
-                if nextday in event["start"]:
-                    nextdays_event["title"] = event["title"]
-                    if "T" in event["start"]:
-                        nextdays_event["start"] = event["start"][11:16]
-                    if event["end"]:
-                        nextdays_event["fin"] = event["end"][11:16]
+                if nextday in event.start:
+                    nextdays_event["title"] = event.title
+                    if "T" in event.start:
+                        nextdays_event["start"] = event.start[11:16]
+                    if event.end:
+                        nextdays_event["fin"] = event.end[11:16]
                     nextdays_events.append(nextdays_event.copy())
                     
         # print(nextdays_events)
@@ -407,7 +406,7 @@ def evening_sendMessage():
             text += "です\n\nカレンダーを確認する\n"+serviceurl+"calendar"
 
             messages = TextSendMessage(text=text)
-            glb_line_bot_api.push_message(row["line_id"],
+            glb_line_bot_api.push_message(row.line_id,
                                       messages=messages)
             
     session.close()
@@ -419,7 +418,7 @@ def change_month():
 
     stmt = update(shifts).values(shift=shifts.c.next_month)
     session.execute(stmt)
-    stmt = update(shifts).values(next_month=False)
+    stmt = update(shifts).values(next_month=False).where(shifts.c.next_month.isnot(None))
     session.execute(stmt)
     session.commit()
     session.close()
@@ -440,6 +439,11 @@ month_trigger = CronTrigger(day=1, hour=6, minute=58,
 scheduler.add_job(change_month, month_trigger)  #月が変わったらシフトデータ更新
 
 scheduler.start()
+
+@app.route("/change")
+def changeMonthexe():
+    change_month()
+    return "OK"
 
 
 @app.route("/")
@@ -625,48 +629,50 @@ def get_events():
         NextDates = calcNextMonth()
         next_month = str(NextDates[1]).zfill(2)
         next_year = NextDates[0]
-        
-        for shift_day in this_month_shift:  # クリックされた日付にバイトがあるか調べる
-            day = str(shift_day["date"]).zfill(2)
-            date = f"{dt.year}-{month}-{day}"
-            if date == clicked_date:    # あればデータをリストに入れる
-                clicked_event_detail["title"] = "バイト"
-                if shift_day["start_time"]:
-                    clicked_event_detail["start"] = shift_day["start_time"]
-                if shift_day["fin_time"]:
-                    clicked_event_detail["fin"] = shift_day["fin_time"]
-                clicked_event_details.append(clicked_event_detail.copy())
-                break
+        if this_month_shift:
+            for shift_day in this_month_shift:  # クリックされた日付にバイトがあるか調べる
+                day = str(shift_day["date"]).zfill(2)
+                date = f"{dt.year}-{month}-{day}"
+                if date == clicked_date:    # あればデータをリストに入れる
+                    clicked_event_detail["title"] = "バイト"
+                    if shift_day["start_time"]:
+                        clicked_event_detail["start"] = shift_day["start_time"]
+                    if shift_day["fin_time"]:
+                        clicked_event_detail["fin"] = shift_day["fin_time"]
+                    clicked_event_details.append(clicked_event_detail.copy())
+                    break
 
         clicked_event_detail = {}
 
-        for next_shift_day in next_month_shift:
-            day = str(next_shift_day["date"]).zfill(2)
-            date = f"{next_year}-{next_month}-{day}"
-            if date == clicked_date:
-                clicked_event_detail["title"] = "バイト"
-                if shift_day["start_time"]:
-                    clicked_event_detail["start"] = shift_day["start_time"]
-                if shift_day["fin_time"]:
-                    clicked_event_detail["fin"] = shift_day["fin_time"].split("T")[1]
-                clicked_event_details.append(clicked_event_detail.copy())
-                break
+        if next_month_shift:
+            for next_shift_day in next_month_shift:
+                day = str(next_shift_day["date"]).zfill(2)
+                date = f"{next_year}-{next_month}-{day}"
+                if date == clicked_date:
+                    clicked_event_detail["title"] = "バイト"
+                    if shift_day["start_time"]:
+                        clicked_event_detail["start"] = shift_day["start_time"]
+                    if shift_day["fin_time"]:
+                        clicked_event_detail["fin"] = shift_day["fin_time"].split("T")[1]
+                    clicked_event_details.append(clicked_event_detail.copy())
+                    break
         
         scheduled_events = getEventdatas(cookie_username)
-        for sd_event in scheduled_events:   # eventsの中にクリックされた日付のものがあるか調べる
-            clicked_event_detail = {}
-            date = sd_event["start"].split("T")[0]
-            if date == clicked_date:    # あればリストに追加
-                clicked_event_detail["id"] =sd_event["id"]
-                clicked_event_detail["title"] = sd_event["title"]
-                if "T" in sd_event["start"]:
-                    clicked_event_detail["start"] = sd_event["start"].split("T")[1].rsplit(":",1)[0] # yyyy-mm-ddThh:mm:ssを hh:mmに変換
-                if sd_event["end"]:
-                    clicked_event_detail["fin"] = sd_event["end"].split("T")[1].rsplit(":",1)[0]
-                clicked_event_detail["category"] = sd_event["category"]
-                if sd_event["comment"]:
-                    clicked_event_detail["comment"] = sd_event["comment"]
-                clicked_event_details.append(clicked_event_detail.copy())
+        if scheduled_events:
+            for sd_event in scheduled_events:   # eventsの中にクリックされた日付のものがあるか調べる
+                clicked_event_detail = {}
+                date = sd_event.start.split("T")[0]
+                if date == clicked_date:    # あればリストに追加
+                    clicked_event_detail["id"] =sd_event.id
+                    clicked_event_detail["title"] = sd_event.title
+                    if "T" in sd_event.start:
+                        clicked_event_detail["start"] = sd_event.start.split("T")[1].rsplit(":",1)[0] # yyyy-mm-ddThh:mm:ssを hh:mmに変換
+                    if sd_event.end:
+                        clicked_event_detail["fin"] = sd_event.end.split("T")[1].rsplit(":",1)[0]
+                    clicked_event_detail["category"] = sd_event.category
+                    if sd_event.comment:
+                        clicked_event_detail["comment"] = sd_event.comment
+                    clicked_event_details.append(clicked_event_detail.copy())
 
 
         if clicked_event_details:
@@ -682,56 +688,58 @@ def get_events():
         month = str(dt.month).zfill(2)
         next_month = str(NextDates[1]).zfill(2)
         next_year = NextDates[0]
+        if shift[2]:
+            for shift_day in shift[2]:
+                event = {}
+                day = str(shift_day["date"]).zfill(2)
+                start = f"{dt.year}-{month}-{day}"
+                event["allDay"] = True
+                if shift_day["start_time"]:
+                    start = f"{dt.year}-{month}-{day}T{shift_day['start_time']}"
+                    event["allDay"] = False
+                event["title"] = "バイト"
+                event["start"] = start
+                if shift_day["fin_time"]:
+                    end = f"{dt.year}-{month}-{day}T{shift_day['fin_time']}"
+                    event["end"] = end
+                event["color"] = "green" 
+                events.append(event.copy())
 
-        for shift_day in shift[2]:
-            event = {}
-            day = str(shift_day["date"]).zfill(2)
-            start = f"{dt.year}-{month}-{day}"
-            event["allDay"] = True
-            if shift_day["start_time"]:
-                start = f"{dt.year}-{month}-{day}T{shift_day['start_time']}"
-                event["allDay"] = False
-            event["title"] = "バイト"
-            event["start"] = start
-            if shift_day["fin_time"]:
-                end = f"{dt.year}-{month}-{day}T{shift_day['fin_time']}"
-                event["end"] = end
-            event["color"] = "green" 
-            events.append(event.copy())
-
-        for shift_day in shift[3]:
-            event = {}
-            day = str(shift_day["date"]).zfill(2)
-            start = f"{next_year}-{next_month}-{day}"
-            event["allDay"] = True
-            if shift_day["start_time"]:
-                start = f"{next_year}-{next_month}-{day}T{shift_day['start_time']}"
-                event["allDay"] = False
-            event["title"] = "バイト"
-            event["start"] = start
-            if shift_day["fin_time"]:
-                end = f"{next_year}-{next_month}-{day}T{shift_day['fin_time']}"
-                event["end"] = end
-            event["color"] = "green" 
-            events.append(event.copy())
+        if shift[3]:
+            for shift_day in shift[3]:
+                event = {}
+                day = str(shift_day["date"]).zfill(2)
+                start = f"{next_year}-{next_month}-{day}"
+                event["allDay"] = True
+                if shift_day["start_time"]:
+                    start = f"{next_year}-{next_month}-{day}T{shift_day['start_time']}"
+                    event["allDay"] = False
+                event["title"] = "バイト"
+                event["start"] = start
+                if shift_day["fin_time"]:
+                    end = f"{next_year}-{next_month}-{day}T{shift_day['fin_time']}"
+                    event["end"] = end
+                event["color"] = "green" 
+                events.append(event.copy())
 
         scheduled_events = getEventdatas(cookie_username)
-        for sd_event in scheduled_events:
-            event = {}
-            event["id"] = sd_event.id
-            event["title"] = sd_event.title
-            event["start"] = sd_event.start
-            if sd_event.start:
-                event["end"] = sd_event.end
-            event["category"] = sd_event.category
-            if event["category"] == "就活":
-                event["color"] = "blue"
-            elif event["category"] == "学業":
-                event["color"] = "red"
-            else:
-                event["color"] = "yellow"
-            event["comment"] = sd_event.category
-            events.append(event.copy())
+        if scheduled_events:
+            for sd_event in scheduled_events:
+                event = {}
+                event["id"] = sd_event.id
+                event["title"] = sd_event.title
+                event["start"] = sd_event.start
+                if sd_event.start:
+                    event["end"] = sd_event.end
+                event["category"] = sd_event.category
+                if event["category"] == "就活":
+                    event["color"] = "blue"
+                elif event["category"] == "学業":
+                    event["color"] = "red"
+                else:
+                    event["color"] = "yellow"
+                event["comment"] = sd_event.category
+                events.append(event.copy())
 
         # FullCalendar形式でイベントを返す
         return jsonify(events)
@@ -798,7 +806,10 @@ def handle_message(event):
 
     elif event.message.text == "シフト登録":
         reply_message = f"{serviceurl}shift_resister"
-
+    elif event.message.text == "スケジュール登録":
+        reply_message = f"{serviceurl}scheduleResister"
+    elif event.message.text == "カレンダー":
+        reply_message = f"{serviceurl}calendar"
     else:
         reply_message = f'こんにちは\nシフトを登録したい場合「シフト登録」と送信してください'
 
@@ -827,6 +838,4 @@ def handle_sticker_message(event):
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
-    app.run(DEBUG=True)
+    app.run(host='0.0.0.0', port=10000, debug=True)
