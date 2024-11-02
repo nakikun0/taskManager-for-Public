@@ -287,6 +287,8 @@ def sendMessage():
     rows = session.query(users).all() #全ユーザーのデータを取る
     for row in rows:
 
+        messages = None
+        todays_events = []
         todays_event = {"title":"", "start":None, "fin":None}
         name = row.name
         shift_Datas = getShiftData(name)
@@ -349,6 +351,8 @@ def evening_sendMessage():
     rows = session.query(users).all() #全ユーザーのデータを取る
     for row in rows:
 
+        messages = None
+        todays_events = []
         nextdays_event = {"title":"", "start":None, "fin":None}
         name = row.name
         shift_Datas = getShiftData(name)
@@ -439,12 +443,6 @@ month_trigger = CronTrigger(day=1, hour=6, minute=58,
 scheduler.add_job(change_month, month_trigger)  #月が変わったらシフトデータ更新
 
 scheduler.start()
-
-@app.route("/change")
-def changeMonthexe():
-    change_month()
-    return "OK"
-
 
 @app.route("/")
 def tohome():
