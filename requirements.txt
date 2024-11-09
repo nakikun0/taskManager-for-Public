@@ -6,4 +6,3 @@ SQLAlchemy
 psycopg2
 pytz
 python-dotenv
-

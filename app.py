@@ -286,7 +286,6 @@ def sendMessage():
 
     rows = session.query(users).all() #全ユーザーのデータを取る
     for row in rows:
-
         messages = None
         todays_events = []
         todays_event = {"title":"", "start":None, "fin":None}
@@ -308,7 +307,7 @@ def sendMessage():
         event_Datas = getEventdatas(name)
         if event_Datas: # スケジュール登録されたイベントデータから一致する日のものを探す
             for event in event_Datas:
-                todays_event = {}
+                todays_event = {"title":"", "start":None, "fin":None}
                 # print(event)
                 today = dt.strftime("%Y-%m-%d")
                 # print("today",today)
@@ -320,7 +319,6 @@ def sendMessage():
                         todays_event["fin"] = event.end[11:16]
                     todays_events.append(todays_event.copy())
                     
-        # print(todays_events)
         if todays_events:
             text = "今日の予定は\n"
             for todays_event in todays_events:
@@ -384,7 +382,7 @@ def evening_sendMessage():
         event_Datas = getEventdatas(name)
         if event_Datas: # スケジュール登録されたイベントデータから一致する日のものを探す
             for event in event_Datas:
-                nextdays_event = {}
+                nextdays_event = {"title":"", "start":None, "fin":None}
                 # print(event)
                 nextday = (dt + timedelta(days=1)).strftime("%Y-%m-%d")
                 # print("nextday",nextday)
