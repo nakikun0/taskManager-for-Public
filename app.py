@@ -350,7 +350,7 @@ def evening_sendMessage():
     for row in rows:
 
         messages = None
-        todays_events = []
+        nextdays_events = []
         nextdays_event = {"title":"", "start":None, "fin":None}
         name = row.name
         shift_Datas = getShiftData(name)
@@ -432,7 +432,7 @@ morning_trigger = CronTrigger(hour=7, minute=0,
                               timezone=timezone('Asia/Tokyo'))
 scheduler.add_job(sendMessage, morning_trigger)
 
-evening_trigger = CronTrigger(hour=22, minute=0,
+evening_trigger = CronTrigger(hour=22, minute=4,
                               timezone=timezone('Asia/Tokyo'))
 scheduler.add_job(evening_sendMessage, evening_trigger)
 
