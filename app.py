@@ -286,6 +286,7 @@ def sendMessage():
 
     rows = session.query(users).all() #全ユーザーのデータを取る
     for row in rows:
+        text = ""
         messages = None
         todays_events = []
         todays_event = {"title":"", "start":None, "fin":None}
@@ -331,9 +332,10 @@ def sendMessage():
                 text += "\n"
             text += "です\n\nカレンダーを確認する\n"+serviceurl+"calendar"
 
-            messages = TextSendMessage(text=text)
-            glb_line_bot_api.push_message(row.line_id,
-                                      messages=messages)
+            if text:
+                messages = TextSendMessage(text=text)
+                glb_line_bot_api.push_message(row.line_id,
+                                          messages=messages)
             
     session.close()
 
@@ -348,7 +350,7 @@ def evening_sendMessage():
 
     rows = session.query(users).all() #全ユーザーのデータを取る
     for row in rows:
-
+        text = ""
         messages = None
         nextdays_events = []
         nextdays_event = {"title":"", "start":None, "fin":None}
@@ -406,10 +408,10 @@ def evening_sendMessage():
                     text += nextdays_event["fin"]
                 text += "\n"
             text += "です\n\nカレンダーを確認する\n"+serviceurl+"calendar"
-
-            messages = TextSendMessage(text=text)
-            glb_line_bot_api.push_message(row.line_id,
-                                      messages=messages)
+            if text:
+                messages = TextSendMessage(text=text)
+                glb_line_bot_api.push_message(row.line_id,
+                                          messages=messages)
             
     session.close()
 
